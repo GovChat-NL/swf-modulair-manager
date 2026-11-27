@@ -1,9 +1,9 @@
 > # ⚠️ LET OP: tijdelijke naam
-> Deze repository heet nu `modulair-manager` omdat dit een pilot is voor een modulaire GovChat,
+> Deze repository heet nu `swf-modulair-manager` omdat dit een pilot is voor een modulaire GovChat,
 > gestart door Súdwest-Fryslân met toestemming van GovChat-NL. Werkt de pilot en is iedereen
 > het eens, dan kan de naam in de toekomst `GovChat-NL-manager` worden.
 
-# modulair-manager
+# swf-modulair-manager
 
 De app-manager van GovChat. Hij stelt uit de keuzes van een organisatie de uitrol samen:
 welke kern, welke apps, in welke versie en met welke instellingen.
@@ -15,10 +15,10 @@ Dit is één van vier repositories die bij elkaar horen:
 
 | Repository | Wat |
 |---|---|
-| [`modulair-kern`](https://github.com/GovChat-NL/modulair-kern) | de kale chat |
-| [`modulair-app-time`](https://github.com/GovChat-NL/modulair-app-time) | de proefapp, en het voorbeeld van hoe een app eruitziet |
-| [`modulair-manager`](https://github.com/GovChat-NL/modulair-manager) | de app-manager, die de uitrol samenstelt; hier staat ook het appcontract |
-| [`modulair-deploy-template`](https://github.com/GovChat-NL/modulair-deploy-template) | de uitrolbasis waar een organisatie één keer een eigen repository van maakt |
+| [`swf-modulair-kern`](https://github.com/GovChat-NL/swf-modulair-kern) | de kale chat |
+| [`swf-modulair-app-time`](https://github.com/GovChat-NL/swf-modulair-app-time) | de proefapp, en het voorbeeld van hoe een app eruitziet |
+| [`swf-modulair-manager`](https://github.com/GovChat-NL/swf-modulair-manager) | de app-manager, die de uitrol samenstelt; hier staat ook het appcontract |
+| [`swf-modulair-deploy-template`](https://github.com/GovChat-NL/swf-modulair-deploy-template) | de uitrolbasis waar een organisatie één keer een eigen repository van maakt |
 
 ## Wat hij doet
 
@@ -37,14 +37,14 @@ token nodig. Hij schrijft alleen bestanden in de map waar je hem draait.
 Nodig: [Node.js](https://nodejs.org) 20 of nieuwer en `git`.
 
 ```sh
-git clone --branch v0.1.0 https://github.com/GovChat-NL/modulair-manager.git
-cd modulair-manager && npm ci
+git clone --branch v0.1.0 https://github.com/GovChat-NL/swf-modulair-manager.git
+cd swf-modulair-manager && npm ci
 ```
 
 In de uitrolrepository van de organisatie:
 
 ```sh
-node <pad>/modulair-manager/manager.js samenstellen acceptatie
+node <pad>/swf-modulair-manager/manager.js samenstellen acceptatie
 ```
 
 Daarna: bekijk de wijziging met `git diff`, commit op een branch, open een pull request
@@ -66,7 +66,7 @@ niet voor acceptatie of productie.
 
 ```yaml
 apps:
-  - url: ../modulair-app-mijnapp
+  - url: ../swf-modulair-app-mijnapp
 ```
 
 ## Waar hij op stopt

@@ -29,7 +29,7 @@ description: "Zoeken in raad en commissies, met bron."
 kern: ">=0.1.0 <1.0.0"       # de versies van de kern waarmee de app werkt
 chart: chart                 # een map in de repository, een oci://-adres, of: geen
 requires:                    # andere apps die nodig zijn
-  - url: https://github.com/GovChat-NL/modulair-app-time
+  - url: https://github.com/GovChat-NL/swf-modulair-app-time
     version: ">=1.0.0 <2.0.0"
 librechat:                   # wat de app aan de chat toevoegt
   mcpServers:
