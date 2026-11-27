@@ -1,0 +1,10 @@
+{
+  "name": "modulair-manager",
+  "version": "0.1.0",
+  "description": "De app-manager van GovChat: stelt uit de keuzes van een organisatie de uitrol samen",
+  "private": true,
+  "bin": { "govchat-manager": "manager.js" },
+  "scripts": { "test": "node --test" },
+  "engines": { "node": ">=20" },
+  "dependencies": { "semver": "^7.6.0", "yaml": "^2.5.0" }
+}
