@@ -1,117 +1,209 @@
-> # ⚠️ LET OP: tijdelijke naam
-> Deze repository heet nu `swf-modulair-manager` omdat dit een pilot is voor een modulaire GovChat,
-> gestart door Súdwest-Fryslân met toestemming van GovChat-NL. Werkt de pilot en is iedereen
-> het eens, dan kan de naam in de toekomst `GovChat-NL-manager` worden.
+> # ⚠️ NOTE: temporary name
+> This repository has the name `swf-modulair-manager` because this is a pilot for a modular
+> GovChat. Súdwest-Fryslân started the pilot with the approval of GovChat-NL. If the pilot
+> is a success and all parties agree, the name can become `GovChat-NL-manager`.
 
-# swf-modulair-manager
+# swf-modulair-manager: the `govchat` command
 
-De app-manager van GovChat. Hij stelt uit de keuzes van een organisatie de uitrol samen:
-welke kern, welke apps, in welke versie en met welke instellingen.
+The `govchat` command writes the files of a GovChat deploy repository. With one command
+you add an app, remove an app, or change a version. The command writes files only. It
+does not commit and it does not push.
 
-LibreChat leest één configuratiebestand. Een losse app kan daar niet zelf in schrijven, en
-Helm kan zulke stukken niet samenvoegen. Daarom is er een samensteller.
+A change goes to the cluster through a pull request. A second person approves the pull
+request. The merge is the deployment: Rancher Fleet reads the repository and deploys it.
 
-Dit is één van vier repositories die bij elkaar horen:
+This is one of four repositories that belong together:
 
-| Repository | Wat |
+| Repository | Function |
 |---|---|
-| [`swf-modulair-kern`](https://github.com/GovChat-NL/swf-modulair-kern) | de kale chat |
-| [`swf-modulair-app-time`](https://github.com/GovChat-NL/swf-modulair-app-time) | de proefapp, en het voorbeeld van hoe een app eruitziet |
-| [`swf-modulair-manager`](https://github.com/GovChat-NL/swf-modulair-manager) | de app-manager, die de uitrol samenstelt; hier staat ook het appcontract |
-| [`swf-modulair-deploy-template`](https://github.com/GovChat-NL/swf-modulair-deploy-template) | de uitrolbasis waar een organisatie één keer een eigen repository van maakt |
+| [`swf-modulair-kern`](https://github.com/GovChat-NL/swf-modulair-kern) | The basic chat. |
+| [`swf-modulair-app-time`](https://github.com/GovChat-NL/swf-modulair-app-time) | The trial app, and the example of an app. |
+| **`swf-modulair-manager`** | The `govchat` command, and the rules for an app (this repository). |
+| [`swf-modulair-deploy-template`](https://github.com/GovChat-NL/swf-modulair-deploy-template) | The start point for the deploy repository of an organisation. |
 
-## Wat hij doet
+## Why there is a command
 
-1. Hij leest `stacks/<omgeving>.yaml`: de kern en de apps, elk met een adres en een versie.
-2. Hij haalt per adres die versie op en leest `kern.yaml` of `app.yaml`.
-3. Hij controleert het contract, de versies, `requires` en de verplichte instellingen.
-4. Hij schrijft per onderdeel een `fleet.yaml` in `deploy/<omgeving>/<naam>/`.
-5. Hij schrijft één samengevoegde configuratie voor LibreChat: de kern plus wat elke gekozen app toevoegt.
-6. Hij legt per versie de commit vast in `stack.lock`.
+LibreChat reads one configuration file. An app that adds a tool must be in that file in
+four places. Helm cannot merge this file. Thus a tool must write it. The `govchat` command
+does this, and it does the checks before the change goes to the cluster.
 
-**Wat hij niet doet:** hij praat niet met het cluster, hij pusht nooit en hij heeft geen
-token nodig. Hij schrijft alleen bestanden in de map waar je hem draait.
+All other files are small and you can read them. You can also write them manually. Then
+run `./govchat build` to write the generated files again.
 
-## Gebruiken
+## How to run the command
 
-Nodig: [Node.js](https://nodejs.org) 20 of nieuwer en `git`.
+You need [Node.js](https://nodejs.org) 20 or newer, and `git`. The commands for a cluster
+(`secrets`, `verify`, `local`) also need `kubectl`. The command `local` also needs `helm`.
+
+A deploy repository contains the file `govchat`. This file starts the command in a fixed
+version. There is no installation step:
 
 ```sh
-git clone --branch v0.1.0 https://github.com/GovChat-NL/swf-modulair-manager.git
-cd swf-modulair-manager && npm ci
+./govchat app list
 ```
 
-In de uitrolrepository van de organisatie:
+To use a newer version of the command, change the version in the file `govchat` with a
+pull request.
 
-```sh
-node <pad>/swf-modulair-manager/manager.js samenstellen acceptatie
-```
+## The commands
 
-Daarna: bekijk de wijziging met `git diff`, commit op een branch, open een pull request
-en laat een tweede persoon meekijken. De merge is de uitrol.
-
-| Opdracht | Wat |
+| Command | Function |
 |---|---|
-| `samenstellen <omgeving>` | Schrijft `deploy/<omgeving>/` en `stack.lock` |
-| `samenstellen <omgeving> --controleer` | Schrijft niets. Faalt als `deploy/` of `stack.lock` niet past bij `stacks/` en `values/`. Bedoeld voor de controle bij een pull request |
-| `lokaal <omgeving>` | Toont de `helm`-opdrachten bij `deploy/<omgeving>/`, voor een eigen laptop zonder Fleet. Voert zelf niets uit |
+| `./govchat init` | Asks for the values of your organisation and writes the files. |
+| `./govchat app list` | Shows the known apps and the installed apps. |
+| `./govchat app add <name or address> --env <environment>` | Adds an app, or changes its version. Option: `--version v1.2.3`. |
+| `./govchat app remove <name> --env <environment>` | Removes an app. |
+| `./govchat app new <name>` | Makes a new app from the example. |
+| `./govchat kern set <version> --env <environment>` | Sets the version of the kern. Use `latest` for the newest version. |
+| `./govchat build` | Writes the generated files again. |
+| `./govchat check` | Fails if the generated files are not current. Use it in the pull request check. |
+| `./govchat promote` | Copies the versions from `acceptatie` to `productie`. Options: `--from`, `--to`. |
+| `./govchat branding` | Writes `shared/branding.yaml` from the files in `branding/`. |
+| `./govchat secrets --env <environment>` | Creates the Secrets in the cluster. Existing Secrets do not change. |
+| `./govchat verify --env <environment>` | Checks that the kern and the apps operate in the cluster. |
+| `./govchat local up` | Deploys the local environment to a test cluster on your computer. |
+| `./govchat local down` | Deletes the local environment from the test cluster. |
 
-Met `--repo <map>` wijs je een andere map aan dan de huidige.
+General options: `--repo <folder>` (default: the current folder) and `--context <name>`
+(the kubectl context; default: the current context).
 
-## Een app vanaf de schijf
+## The files in a deploy repository
 
-Een adres mag ook een map zijn. Dan is er geen versie en geen vastgelegde commit; in
-`stack.lock` staat `lokaal`. Dit is voor het bouwen van een app op de eigen laptop,
-niet voor acceptatie of productie.
+```
+govchat                        starts the command in a fixed version
+govchat.yaml                   the environments and the permitted sources
+shared/kern.yaml               settings of the kern for all environments
+shared/branding.yaml           the logo and the icons (generated from branding/)
+acceptatie/
+  kern/
+    kern.yaml                  copy from the kern repository: what the kern is
+    kern-values.yaml           copy from the kern repository: the settings of the kern
+    settings.yaml              settings for this environment (web address, ingress)
+    generated.yaml             GENERATED: the LibreChat configuration with the apps
+    fleet.yaml                 GENERATED: tells Fleet which chart and which files to use
+  apps/
+    time/
+      app.yaml                 copy from the app repository: what the app is
+      settings.yaml            settings of the app for this environment (if the app has settings)
+      manifests.yaml           GENERATED: Deployment, Service and NetworkPolicy
+      fleet.yaml               GENERATED
+productie/
+  ... the same
+```
+
+- A folder in `apps/` means that the app is installed. No folder means no app.
+- Each copy contains the address, the version and the commit of its source.
+- The command writes the files with `GENERATED` in the first line. Do not edit these files.
+- Fleet reads these files directly. There is no other step between the repository and the cluster.
+
+## Procedures
+
+### Add an app
+
+1. Add the app:
+   ```sh
+   ./govchat app add time --env acceptatie
+   ```
+2. If the command shows settings, write them in `acceptatie/apps/<name>/settings.yaml`. Then run `./govchat build`.
+3. If the command shows Secrets, create them: `KEY=... ./govchat secrets --env acceptatie`.
+4. Commit on a branch and open a pull request. A second person merges.
+5. After Fleet completes the deployment, run `./govchat verify --env acceptatie`.
+
+### Move a version to production
+
+1. Run `./govchat promote`.
+2. Write the settings for `productie`, if the command shows some.
+3. Commit on a branch and open a second pull request. This merge is the release.
+
+### Remove an app
+
+1. Run `./govchat app remove time --env acceptatie`.
+2. Commit on a branch and open a pull request.
+
+Fleet deletes all parts of the app. The assistant does not have the tool anymore.
+
+### Make a new app
+
+1. Run `./govchat app new my-app`. The command makes a folder with an example server.
+2. Obey the instructions in the `README.md` of the new folder.
+
+An app can be one file, `app.yaml`. A more complex app can bring its own Helm chart.
+The rules are in [CONTRACT.md](CONTRACT.md).
+
+## The checks
+
+The command stops with an error message in these conditions:
+
+- An address is not in `allowedSources` of `govchat.yaml`.
+- A version is not a full version (`v1.2.3`), or the tag is different from the version in the file.
+- A folder on the disk is used as a source in an environment that is not local.
+- An app obeys a different contract, or does not operate with the kern of the environment.
+- A necessary app is missing, has the incorrect version, or apps need each other in a circle.
+- Two apps give an assistant with the same name.
+- A required setting is empty, or a setting is not known to the app.
+- The title of an app contains characters with which LibreChat does not start.
+- An image has no fixed version.
+- The settings of the organisation try to replace `librechat.configYamlContent`. This part belongs to the kern.
+
+## Rancher Fleet
+
+Make one `GitRepo` for each environment. Each `GitRepo` points to the folder of that
+environment:
 
 ```yaml
-apps:
-  - url: ../swf-modulair-app-mijnapp
+apiVersion: fleet.cattle.io/v1alpha1
+kind: GitRepo
+metadata:
+  name: govchat-acceptatie
+  namespace: fleet-local          # the Fleet workspace of the cluster
+spec:
+  repo: https://gitea.example.nl/<organisation>/govchat-deploy.git
+  branch: main
+  paths: [acceptatie]
 ```
 
-## Waar hij op stopt
+Fleet deploys the apps first and then the chat, because the chat connects to the tools
+when it starts. When the configuration changes, the chat starts again automatically.
 
-Bij elk van deze punten stopt het samenstellen met een foutmelding. Er wordt nooit stil
-overschreven.
+## Tests
 
-- een adres zonder volledige versie (`v1.2.3`), of een versie die niet op te halen is;
-- een tag die anders is dan de versie in `app.yaml`;
-- een adres dat niet in `allowedSources` staat;
-- een tag die naar een andere commit wijst dan in `stack.lock` staat;
-- een app die een ander contract volgt, of niet past bij de gekozen kern;
-- een ontbrekende afhankelijkheid, of een die niet in het versiebereik valt;
-- afhankelijkheden die in een kring naar elkaar verwijzen;
-- twee apps met dezelfde naam, of dubbele namen van tools of assistenten;
-- een verplichte instelling die niet is ingevuld;
-- een titel van een tool waar LibreChat niet mee start;
-- instellingen van de organisatie die `librechat.configYamlContent` overschrijven: dat deel is van de kern.
+Run the automatic tests with `npm test`. They use Git repositories in a temporary folder.
+They do not need a network or a cluster.
 
-Een app die niet meer in de lijst staat, laat niets achter: `deploy/<omgeving>/` wordt
-bij elke keer samenstellen opnieuw opgebouwd.
+These tests were done manually on 27 November 2026, on a local cluster (kind, arm64) with
+kern 0.2.0 (LibreChat chart 3.2.1, LibreChat v0.8.9), the replacement model and the
+MongoDB from the kern:
 
-## Het appcontract
+| Test | Result |
+|---|---|
+| `local up` with the kern and `time`, then `verify` | OK. LibreChat gets 5 tools from `time`. |
+| `app new`, build the image, `app add`, `local up`, `verify` | OK. LibreChat gets the tool of the example server. |
+| `app remove time`, `local up`, `verify` | OK. No parts of `time` stay in the cluster. |
+| Fleet 0.13.18 with Gitea 1.22: two environments from one repository on one cluster | OK. Fleet deploys the app before the chat. |
+| Remove an app in `acceptatie` with a commit | OK. Fleet deletes the app. The chat starts again. `productie` does not change. |
+| An app with its own chart and a setting, then `promote` | OK in the two environments. |
+| The same repository after an upgrade to Fleet 0.17.0, with a new commit | OK. |
 
-Staat in [CONTRACT.md](CONTRACT.md). Versie 1 is een concept.
+## Not tested and not available
 
-## Testen
+- **A conversation with a tool call.** The replacement model cannot call tools. A test with a real model is necessary.
+- **The access checks of `verify` from the outside** (login refused without the account of the organisation). They need a real web address.
+- **Rancher.** The tests used Fleet without the Rancher screen.
+- **A private Git repository in Fleet.** The test repository was public in the test cluster.
+- **The check in a pull request on Gitea.** The workflow file is there. It needs Gitea Actions with a runner.
+- **A screen.** There is only the command line. A screen can call the same commands later.
+- **LiteLLM.** If there is more than one model, the chat must use LiteLLM. This is not made.
+- **"Off after installation".** An installed app is on for all users.
+- **Scheduled jobs and storage in `app.yaml`.** An app that needs them must bring a chart.
 
-```sh
-npm test
-```
+## Version 0.1.0
 
-De tests stellen samen uit onderdelen op de schijf, zonder netwerk.
+Version 0.1.0 was the app manager (`manager.js`, with `stacks/`, `deploy/` and
+`stack.lock`). Version 0.2.0 replaces it. The two are not compatible.
 
-## Wat er nog niet is
+## Origin
 
-- **Het scherm.** Het beheerpaneel van de branch `swf/modulairKern` (map `admin/`) is niet meegenomen: het bewerkte de bestanden van die branch en past niet op deze indeling. Dit is de samensteller als opdrachtregel.
-- **De route via LiteLLM.** Staat LiteLLM aan, dan hoort de chat via LiteLLM te lopen. Dat is nog niet gebouwd.
-- **Een image van de app-manager.** Er is een `Dockerfile`; het image wordt nog niet gepubliceerd.
-- **Een toets tegen het schema van LibreChat.** Nu wordt alleen de titel van een tool gecontroleerd.
-- **Fleet.** De `fleet.yaml`-bestanden zijn nog niet door Fleet uitgerold. Getest is de uitrol met `helm` op een lokaal cluster.
-
-## Herkomst
-
-Opnieuw geschreven op 27 november 2026. De regels voor het aanzetten van een MCP-server
-komen uit `admin/server.js` van de branch `swf/modulairKern`, commit `7e2474d`. De
-licentie is nog niet gekozen; het voorstel is EUPL-1.2 en het besluit ligt bij de
-maintainers van GovChat-NL.
+Written on 27 November 2026. The rules to add an MCP server to LibreChat come from
+`admin/server.js` of the branch `swf/modulairKern` of `GovChat-NL/GovChat-NL`, commit
+`7e2474d`. The licence is not chosen yet. The proposal is EUPL-1.2. The maintainers of
+GovChat-NL make the decision.

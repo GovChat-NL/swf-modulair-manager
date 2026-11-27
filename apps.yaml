@@ -1,0 +1,7 @@
+# The known apps. This list is a help to find an app by its name.
+# It is not an approval: each organisation decides which sources it permits
+# ("allowedSources" in govchat.yaml). An app that is not in this list can be added
+# with its full address.
+time:
+  url: https://github.com/GovChat-NL/swf-modulair-app-time
+  description: Date and time tools. The trial app and the example of an app.

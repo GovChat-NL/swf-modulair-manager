@@ -1,9 +1,10 @@
 {
   "name": "swf-modulair-manager",
-  "version": "0.1.0",
-  "description": "De app-manager van GovChat: stelt uit de keuzes van een organisatie de uitrol samen",
+  "version": "0.2.0",
+  "description": "The govchat command: writes the files of a GovChat deploy repository",
   "private": true,
-  "bin": { "govchat-manager": "manager.js" },
+  "bin": { "govchat": "govchat.js" },
+  "files": ["govchat.js", "lib", "apps.yaml", "template-app"],
   "scripts": { "test": "node --test" },
   "engines": { "node": ">=20" },
   "dependencies": { "semver": "^7.6.0", "yaml": "^2.5.0" }
